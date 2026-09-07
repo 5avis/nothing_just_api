@@ -1,0 +1,11 @@
+{
+  "name": "dark-space-chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal single-page chatbot with realistic dark space UI and Vercel serverless Gemini API backend",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}
