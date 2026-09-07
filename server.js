@@ -6,25 +6,28 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env or .env.local if present
-for (const envFile of ['.env.local', '.env']) {
-  const envPath = path.join(__dirname, envFile);
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf8');
-    for (const line of content.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const match = trimmed.match(/^([^=]+)=(.*)$/);
-      if (match) {
-        const key = match[1].trim();
-        const value = match[2].trim().replace(/^['"]|['"]$/g, '');
-        if (!process.env[key]) {
-          process.env[key] = value;
+// Load environment variables dynamically
+function loadEnv() {
+  for (const envFile of ['.env.local', '.env', '.env.example']) {
+    const envPath = path.join(__dirname, envFile);
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const match = trimmed.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim().replace(/^['"]|['"]$/g, '');
+          if (value && value !== 'your_api_key_here') {
+            process.env[key] = value;
+          }
         }
       }
     }
   }
 }
+loadEnv();
 
 // Dynamically import api/chat.js handler
 import handler from './api/chat.js';
@@ -36,6 +39,7 @@ const server = http.createServer(async (req, res) => {
 
   // Route: /api/chat
   if (parsedUrl.pathname === '/api/chat') {
+    loadEnv();
     let bodyChunks = [];
     req.on('data', chunk => bodyChunks.push(chunk));
     req.on('end', async () => {
